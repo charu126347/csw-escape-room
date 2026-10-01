@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSW ESCAPE CABINETS</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  :root {
+    --green: #00ff88;
+    --dim-green: #00cc6a;
+    --dark-green: #003d1f;
+    --bg: #030a04;
+    --surface: #060e07;
+    --card: #0a160b;
+    --border: #0d2e12;
+    --glow: 0 0 8px #00ff8877, 0 0 20px #00ff8844;
+    --glow-strong: 0 0 12px #00ff88bb, 0 0 40px #00ff8866;
+    --red: #ff3355;
+    --amber: #ffaa00;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Orbitron', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* SCANLINE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,255,136,0.015) 2px,
+      rgba(0,255,136,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* GRID BACKGROUND */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 10;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .header-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .header-top-bar .line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+  }
+  .header-top-bar span {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim-green);
+    letter-spacing: 3px;
+  }
+  .main-title {
+    font-family: var(--display);
+    font-size: clamp(22px, 5vw, 40px);
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--green);
+    text-shadow: var(--glow-strong);
+    line-height: 1.1;
+    margin-bottom: 6px;
+    animation: flicker 6s infinite;
+  }
+  .subtitle {
+    font-size: 11px;
+    color: var(--dim-green);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .status-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 16px;
+    font-size: 11px;
+    color: var(--dim-green);
+    letter-spacing: 2px;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: var(--glow);
+    animation: pulse 1.5s infinite;
+  }
+
+  /* INSTRUCTION */
+  .instruction {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .instruction p {
+    font-size: 13px;
+    color: var(--dim-green);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .instruction .big {
+    font-family: var(--display);
+    font-size: 15px;
+    color: var(--green);
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px #00ff8855;
+  }
+
+  /* ENVELOPES GRID */
+  .envelopes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 560px) {
+    .envelopes-grid { grid-template-columns: 1fr; }
+  }
+
+  .envelope-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 20px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    outline: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .envelope-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,255,136,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .envelope-btn:hover, .envelope-btn:focus {
+    border-color: var(--green);
+    box-shadow: var(--glow), inset 0 0 30px rgba(0,255,136,0.06);
+    transform: translateY(-2px);
+  }
+  .envelope-btn .env-icon {
+    font-size: 42px;
+    filter: drop-shadow(0 0 8px #00ff8888);
+    animation: float 3s ease-in-out infinite;
+  }
+  .envelope-btn:nth-child(2) .env-icon { animation-delay: 0.5s; }
+  .envelope-btn:nth-child(3) .env-icon { animation-delay: 1s; }
+  .envelope-btn:nth-child(4) .env-icon { animation-delay: 1.5s; }
+
+  .envelope-btn .env-label {
+    font-family: var(--display);
+    font-size: 12px;
+    color: var(--green);
+    letter-spacing: 3px;
+    text-shadow: 0 0 6px #00ff8855;
+  }
+  .envelope-btn .env-sub {
+    font-size: 10px;
+    color: var(--dim-green);
+    letter-spacing: 2px;
+  }
+  .envelope-btn .corner-tl, .envelope-btn .corner-br {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: var(--green);
+    border-style: solid;
+    opacity: 0.4;
+    transition: opacity 0.25s;
+  }
+  .envelope-btn .corner-tl { top: 6px; left: 6px; border-width: 1px 0 0 1px; }
+  .envelope-btn .corner-br { bottom: 6px; right: 6px; border-width: 0 1px 1px 0; }
+  .envelope-btn:hover .corner-tl,
+  .envelope-btn:hover .corner-br { opacity: 1; }
+
+  /* PUZZLE MODAL OVERLAY */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(3,10,4,0.92);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .overlay.active { display: flex; }
+
+  .puzzle-box {
+    background: var(--surface);
+    border: 1px solid var(--green);
+    border-radius: 10px;
+    padding: 32px 28px;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: var(--glow-strong);
+    position: relative;
+    animation: slideIn 0.3s ease;
+  }
+  .puzzle-box .close-btn {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: none;
+    border: none;
+    color: var(--dim-green);
+    font-size: 18px;
+    cursor: pointer;
+    font-family: var(--mono);
+    transition: color 0.2s;
+  }
+  .puzzle-box .close-btn:hover { color: var(--red); }
+
+  .puzzle-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .puzzle-icon { font-size: 24px; }
+  .puzzle-title {
+    font-family: var(--display);
+    font-size: 14px;
+    color: var(--green);
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px #00ff8866;
+  }
+  .puzzle-num {
+    font-size: 10px;
+    color: var(--dim-green);
+    letter-spacing: 2px;
+  }
+
+  .puzzle-clues {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+  }
+  .puzzle-clues p {
+    font-size: 13px;
+    color: #aaffcc;
+    line-height: 1.9;
+    letter-spacing: 0.5px;
+  }
+  .puzzle-clues p + p { margin-top: 6px; }
+  .puzzle-clues .clue-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: #aaffcc;
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  .clue-line .clue-num {
+    color: var(--green);
+    font-weight: bold;
+    min-width: 16px;
+    text-shadow: 0 0 6px #00ff8866;
+  }
+
+  .pin-section { margin-top: 4px; }
+  .pin-label {
+    font-size: 11px;
+    color: var(--dim-green);
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pin-label::before, .pin-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .pin-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .pin-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--green);
+    font-family: var(--display);
+    font-size: 22px;
+    letter-spacing: 8px;
+    text-align: center;
+    padding: 12px 10px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    max-width: 200px;
+  }
+  .pin-input:focus {
+    border-color: var(--green);
+    box-shadow: var(--glow);
+  }
+  .pin-input::placeholder { color: #1a3d22; letter-spacing: 4px; }
+
+  .unlock-btn {
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: var(--display);
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .unlock-btn:hover {
+    background: rgba(0,255,136,0.1);
+    box-shadow: var(--glow);
+  }
+
+  .pin-feedback {
+    margin-top: 10px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    min-height: 18px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .pin-feedback.error { color: var(--red); text-shadow: 0 0 8px #ff335588; }
+  .pin-feedback.success { color: var(--green); text-shadow: var(--glow); }
+
+  /* CODE REVEAL */
+  .code-reveal {
+    display: none;
+    margin-top: 18px;
+    background: var(--dark-green);
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 18px 20px;
+    text-align: center;
+    animation: slideIn 0.4s ease;
+  }
+  .code-reveal.show { display: block; }
+  .code-reveal .cr-label {
+    font-size: 10px;
+    color: var(--dim-green);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .code-reveal .cr-code {
+    font-family: var(--display);
+    font-size: 28px;
+    letter-spacing: 10px;
+    color: var(--green);
+    text-shadow: var(--glow-strong);
+    margin-bottom: 8px;
+  }
+  .code-reveal .cr-warn {
+    font-size: 11px;
+    color: var(--amber);
+    letter-spacing: 1px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* SHAKE */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+  .shake { animation: shake 0.4s ease; }
+
+  /* ANIMATIONS */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px #00ff88; }
+    50% { opacity: 0.4; box-shadow: none; }
+  }
+  @keyframes flicker {
+    0%,95%,100% { opacity: 1; }
+    96% { opacity: 0.85; }
+    97% { opacity: 1; }
+    98% { opacity: 0.9; }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-16px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* DIVIDER */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 36px 0 28px;
+  }
+  .divider span {
+    font-size: 10px;
+    color: var(--dim-green);
+    letter-spacing: 3px;
+    white-space: nowrap;
+  }
+  .divider .dline {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 20px 0 0;
+    font-size: 11px;
+    color: #1a3d22;
+    letter-spacing: 3px;
+    position: relative;
+    z-index: 10;
+  }
+  footer::before {
+    content: '';
+    display: block;
+    width: 200px;
+    height: 1px;
+    background: var(--border);
+    margin: 0 auto 14px;
+  }
+
+  /* CORNER DECORATIONS ON MAIN */
+  .corner-dec {
+    position: fixed;
+    width: 40px; height: 40px;
+    border-color: rgba(0,255,136,0.2);
+    border-style: solid;
+    z-index: 11;
+  }
+  .corner-dec.tl { top: 16px; left: 16px; border-width: 2px 0 0 2px; }
+  .corner-dec.tr { top: 16px; right: 16px; border-width: 2px 2px 0 0; }
+  .corner-dec.bl { bottom: 16px; left: 16px; border-width: 0 0 2px 2px; }
+  .corner-dec.br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; }
+</style>
+</head>
+<body>
+
+<!-- Corner decorations -->
+<div class="corner-dec tl"></div>
+<div class="corner-dec tr"></div>
+<div class="corner-dec bl"></div>
+<div class="corner-dec br"></div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-top-bar">
+      <div class="line"></div>
+      <span>// LEVEL 01 //</span>
+      <div class="line"></div>
+    </div>
+    <h1 class="main-title">CSW ESCAPE CABINETS</h1>
+    <p class="subtitle">Classified Access Terminal — Level 1</p>
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      SYSTEM ACTIVE &nbsp;|&nbsp; AWAITING AGENT INPUT
+    </div>
+  </header>
+
+  <!-- INSTRUCTION -->
+  <div class="instruction">
+    <p>Four sealed envelopes. One holds your path forward.</p>
+    <p class="big">▶ SELECT YOUR ENVELOPE TO BEGIN</p>
+  </div>
+
+  <!-- ENVELOPE GRID -->
+  <div class="envelopes-grid">
+    <button class="envelope-btn" onclick="openPuzzle(1)">
+      <div class="corner-tl"></div>
+      <div class="corner-br"></div>
+      <span class="env-icon">✉️</span>
+      <span class="env-label">ENVELOPE — 01</span>
+      <span class="env-sub">[ CLASSIFIED ]</span>
+    </button>
+    <button class="envelope-btn" onclick="openPuzzle(2)">
+      <div class="corner-tl"></div>
+      <div class="corner-br"></div>
+      <span class="env-icon">✉️</span>
+      <span class="env-label">ENVELOPE — 02</span>
+      <span class="env-sub">[ CLASSIFIED ]</span>
+    </button>
+    <button class="envelope-btn" onclick="openPuzzle(3)">
+      <div class="corner-tl"></div>
+      <div class="corner-br"></div>
+      <span class="env-icon">✉️</span>
+      <span class="env-label">ENVELOPE — 03</span>
+      <span class="env-sub">[ CLASSIFIED ]</span>
+    </button>
+    <button class="envelope-btn" onclick="openPuzzle(4)">
+      <div class="corner-tl"></div>
+      <div class="corner-br"></div>
+      <span class="env-icon">✉️</span>
+      <span class="env-label">ENVELOPE — 04</span>
+      <span class="env-sub">[ CLASSIFIED ]</span>
+    </button>
+  </div>
+
+  <div class="divider">
+    <div class="dline"></div>
+    <span>SECURED TERMINAL</span>
+    <div class="dline"></div>
+  </div>
+
+  <footer>
+    &copy; CSW ESCAPE CABINETS &nbsp;|&nbsp; AUTHORIZED PERSONNEL ONLY
+  </footer>
+
+</div>
+
+<!-- ========== PUZZLE OVERLAY ========== -->
+<div class="overlay" id="overlay">
+  <div class="puzzle-box" id="puzzleBox">
+    <button class="close-btn" onclick="closeOverlay()">✕</button>
+
+    <div class="puzzle-header">
+      <span class="puzzle-icon" id="pIcon"></span>
+      <div>
+        <div class="puzzle-num" id="pNum"></div>
+        <div class="puzzle-title" id="pTitle"></div>
+      </div>
+    </div>
+
+    <div class="puzzle-clues" id="pClues"></div>
+
+    <div class="pin-section">
+      <div class="pin-label">ENTER 4-DIGIT PIN</div>
+      <div class="pin-input-row">
+        <input
+          class="pin-input"
+          id="pinInput"
+          type="text"
+          inputmode="numeric"
+          maxlength="4"
+          placeholder="_ _ _ _"
+          autocomplete="off"
+          onkeydown="if(event.key==='Enter') checkPin()"
+        />
+        <button class="unlock-btn" onclick="checkPin()">UNLOCK</button>
+      </div>
+      <div class="pin-feedback" id="pinFeedback"></div>
+    </div>
+
+    <div class="code-reveal" id="codeReveal">
+      <div class="cr-label">ACCESS GRANTED — 8-DIGIT CODE UNLOCKED</div>
+      <div class="cr-code" id="revealCode"></div>
+      <div class="cr-warn">⚠ MEMORIZE THIS CODE — YOU CANNOT RETURN FOR IT</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const puzzles = {
+    1: {
+      icon: '🗓️',
+      num: 'PUZZLE 01',
+      title: 'THE OCTOBER CLUE',
+      clues: [
+        { n: '1.', t: 'The calendar holds your answer.' },
+        { n: '2.', t: 'October — which month of the year is it?' },
+        { n: '3.', t: 'Take that number. Four times of it.' },
+      ],
+      prompt: '🔐 What is the 4-digit PIN?',
+      pin: '1144',
+      code: '73916428'
+    },
+    2: {
+      icon: '📖',
+      num: 'PUZZLE 02',
+      title: 'THE BOOK',
+      clues: [
+        { n: '1.', t: 'Read between the clues.' },
+        { n: '2.', t: 'Find the unique page.' },
+        { n: '3.', t: 'Now look around it.' },
+      ],
+      prompt: '🔐 What is your 4-digit PIN?',
+      pin: '1603',
+      code: '61482937'
+    },
+    3: {
+      icon: '🎲',
+      num: 'PUZZLE 03',
+      title: 'ROLL WITH IT',
+      clues: [
+        { n: '1.', t: '"The answer is already in front of you."' },
+        { n: '', t: '' },
+        { n: '', t: '' },
+      ],
+      prompt: '🔐 Find the PIN — it\'s closer than you think.',
+      pin: '2536',
+      code: '85310729'
+    },
+    4: {
+      icon: '🎂',
+      num: 'PUZZLE 04',
+      title: 'THE BIRTHDAY',
+      clues: [
+        { n: '1.', t: 'Blow the candles of a beautiful birthday.' },
+        { n: '2.', t: 'Celebrate the double happiness.' },
+        { n: '3.', t: 'Find the hidden 4-digit PIN.' },
+      ],
+      prompt: '🔐 What is the 4-digit PIN?',
+      pin: '1224',
+      code: '29174658'
+    }
+  };
+
+  let currentPuzzle = null;
+
+  function openPuzzle(n) {
+    currentPuzzle = n;
+    const p = puzzles[n];
+
+    document.getElementById('pIcon').textContent = p.icon;
+    document.getElementById('pNum').textContent = p.num;
+    document.getElementById('pTitle').textContent = p.title;
+
+    const clueBox = document.getElementById('pClues');
+    clueBox.innerHTML = '';
+    p.clues.forEach(c => {
+      if (!c.n && !c.t) return;
+      const d = document.createElement('div');
+      d.className = 'clue-line';
+      d.innerHTML = `<span class="clue-num">${c.n}</span><span>${c.t}</span>`;
+      clueBox.appendChild(d);
+    });
+    const prompt = document.createElement('div');
+    prompt.className = 'clue-line';
+    prompt.style.marginTop = '10px';
+    prompt.style.borderTop = '1px solid #0d2e12';
+    prompt.style.paddingTop = '10px';
+    prompt.style.color = '#00ff88';
+    prompt.style.fontWeight = 'bold';
+    prompt.innerHTML = `<span>${p.prompt}</span>`;
+    clueBox.appendChild(prompt);
+
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinFeedback').textContent = '';
+    document.getElementById('pinFeedback').className = 'pin-feedback';
+    document.getElementById('codeReveal').classList.remove('show');
+    document.getElementById('pinInput').disabled = false;
+    document.querySelector('.unlock-btn').disabled = false;
+
+    document.getElementById('overlay').classList.add('active');
+    setTimeout(() => document.getElementById('pinInput').focus(), 100);
+  }
+
+  function closeOverlay() {
+    document.getElementById('overlay').classList.remove('active');
+    currentPuzzle = null;
+  }
+
+  document.getElementById('overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeOverlay();
+  });
+
+  function checkPin() {
+    if (!currentPuzzle) return;
+    const input = document.getElementById('pinInput').value.trim();
+    const p = puzzles[currentPuzzle];
+    const fb = document.getElementById('pinFeedback');
+
+    if (input.length !== 4) {
+      fb.textContent = '[ ERROR ] — ENTER A 4-DIGIT PIN';
+      fb.className = 'pin-feedback error';
+      return;
+    }
+
+    if (input === p.pin) {
+      fb.textContent = '[ ACCESS GRANTED ] — PIN ACCEPTED';
+      fb.className = 'pin-feedback success';
+      document.getElementById('revealCode').textContent = p.code;
+      document.getElementById('codeReveal').classList.add('show');
+      document.getElementById('pinInput').disabled = true;
+      document.querySelector('.unlock-btn').disabled = true;
+    } else {
+      const input_ = document.getElementById('pinInput');
+      input_.classList.add('shake');
+      setTimeout(() => input_.classList.remove('shake'), 400);
+      input_.value = '';
+      fb.textContent = '[ DENIED ] — INVALID PIN — TRY AGAIN';
+      fb.className = 'pin-feedback error';
+    }
+  }
+</script>
+</body>
+</html>
