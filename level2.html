@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSW ESCAPE CABINETS — LEVEL 02</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  :root {
+    --green: #00ff88;
+    --dim-green: #00cc6a;
+    --dark-green: #003d1f;
+    --bg: #030a04;
+    --surface: #060e07;
+    --card: #0a160b;
+    --border: #0d2e12;
+    --glow: 0 0 8px #00ff8877, 0 0 20px #00ff8844;
+    --glow-strong: 0 0 12px #00ff88bb, 0 0 40px #00ff8866;
+    --red: #ff3355;
+    --amber: #ffaa00;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Orbitron', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* SCANLINE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,255,136,0.015) 2px,
+      rgba(0,255,136,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* GRID */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* CORNER DECORATIONS */
+  .corner-dec {
+    position: fixed;
+    width: 40px; height: 40px;
+    border-color: rgba(0,255,136,0.2);
+    border-style: solid;
+    z-index: 11;
+  }
+  .corner-dec.tl { top: 16px; left: 16px; border-width: 2px 0 0 2px; }
+  .corner-dec.tr { top: 16px; right: 16px; border-width: 2px 2px 0 0; }
+  .corner-dec.bl { bottom: 16px; left: 16px; border-width: 0 0 2px 2px; }
+  .corner-dec.br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; }
+
+  /* MAIN CONTAINER */
+  .container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 580px;
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    width: 100%;
+  }
+  .header-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .header-top-bar .line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+  }
+  .header-top-bar span {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim-green);
+    letter-spacing: 3px;
+  }
+  .main-title {
+    font-family: var(--display);
+    font-size: clamp(18px, 4vw, 32px);
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--green);
+    text-shadow: var(--glow-strong);
+    line-height: 1.1;
+    margin-bottom: 6px;
+    animation: flicker 6s infinite;
+  }
+  .subtitle {
+    font-size: 11px;
+    color: var(--dim-green);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .status-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 16px;
+    font-size: 11px;
+    color: var(--dim-green);
+    letter-spacing: 2px;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: var(--glow);
+    animation: pulse 1.5s infinite;
+  }
+
+  /* INPUT CARD */
+  .input-card {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .input-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,255,136,0.03) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .input-card .ic-corner-tl,
+  .input-card .ic-corner-br {
+    position: absolute;
+    width: 14px; height: 14px;
+    border-color: var(--green);
+    border-style: solid;
+    opacity: 0.5;
+  }
+  .input-card .ic-corner-tl { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
+  .input-card .ic-corner-br { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
+
+  .ic-label {
+    font-family: var(--display);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--dim-green);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .ic-sublabel {
+    font-size: 12px;
+    color: #4d9966;
+    text-align: center;
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  /* CODE INPUT */
+  .code-input-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .code-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--green);
+    font-family: var(--display);
+    font-size: 20px;
+    letter-spacing: 6px;
+    text-align: center;
+    padding: 16px 12px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .code-input:focus {
+    border-color: var(--green);
+    box-shadow: var(--glow);
+  }
+  .code-input::placeholder {
+    color: #1a3d22;
+    letter-spacing: 3px;
+    font-size: 14px;
+  }
+  .code-input.error-state {
+    border-color: var(--red);
+    box-shadow: 0 0 8px #ff335544;
+  }
+  .code-input.success-state {
+    border-color: var(--green);
+    box-shadow: var(--glow-strong);
+  }
+
+  /* SUBMIT BUTTON */
+  .submit-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: var(--display);
+    font-size: 12px;
+    letter-spacing: 3px;
+    padding: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .submit-btn:hover {
+    background: rgba(0,255,136,0.08);
+    box-shadow: var(--glow);
+  }
+  .submit-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  /* FEEDBACK */
+  .feedback {
+    margin-top: 14px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    min-height: 18px;
+    text-align: center;
+  }
+  .feedback.error { color: var(--red); text-shadow: 0 0 8px #ff335566; }
+  .feedback.success { color: var(--green); text-shadow: var(--glow); }
+
+  /* SUCCESS PANEL */
+  .success-panel {
+    display: none;
+    width: 100%;
+    background: var(--dark-green);
+    border: 1px solid var(--green);
+    border-radius: 10px;
+    padding: 36px 28px;
+    text-align: center;
+    box-shadow: var(--glow-strong);
+    animation: slideIn 0.5s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .success-panel.show { display: block; }
+  .success-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,255,136,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .sp-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+  }
+  .sp-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .sp-line .dline {
+    flex: 1;
+    height: 1px;
+    background: rgba(0,255,136,0.3);
+  }
+  .sp-line span {
+    font-size: 10px;
+    color: var(--dim-green);
+    letter-spacing: 3px;
+  }
+  .sp-title {
+    font-family: var(--display);
+    font-size: clamp(14px, 3vw, 20px);
+    font-weight: 900;
+    color: var(--green);
+    letter-spacing: 3px;
+    text-shadow: var(--glow-strong);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .sp-msg {
+    font-size: 13px;
+    color: #aaffcc;
+    letter-spacing: 1px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+  .sp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,255,136,0.1);
+    border: 1px solid rgba(0,255,136,0.3);
+    border-radius: 4px;
+    padding: 8px 20px;
+    font-size: 11px;
+    color: var(--dim-green);
+    letter-spacing: 3px;
+    margin-bottom: 24px;
+  }
+  .sp-badge .sdot {
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: var(--glow);
+    animation: pulse 1s infinite;
+  }
+
+  /* HINT BOX */
+  .hint-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 20px;
+    text-align: left;
+    margin-top: 4px;
+  }
+  .hint-box .hb-label {
+    font-size: 10px;
+    color: var(--dim-green);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hint-box .hb-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .hint-box .hb-text {
+    font-size: 13px;
+    color: #aaffcc;
+    line-height: 1.9;
+    letter-spacing: 0.5px;
+  }
+  .hint-box .hb-text .hl {
+    color: var(--green);
+    font-weight: bold;
+    text-shadow: 0 0 6px #00ff8855;
+  }
+
+  /* SHAKE */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+  .shake { animation: shake 0.4s ease; }
+
+  /* ANIMATIONS */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  @keyframes flicker {
+    0%,95%,100% { opacity: 1; }
+    96% { opacity: 0.85; }
+    97% { opacity: 1; }
+    98% { opacity: 0.9; }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes scanPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  /* TYPING CURSOR */
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 14px;
+    background: var(--green);
+    margin-left: 2px;
+    vertical-align: middle;
+    animation: pulse 0.8s infinite;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 10px 0 0;
+    font-size: 11px;
+    color: #1a3d22;
+    letter-spacing: 3px;
+    position: relative;
+    z-index: 10;
+  }
+  footer::before {
+    content: '';
+    display: block;
+    width: 200px;
+    height: 1px;
+    background: var(--border);
+    margin: 0 auto 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="corner-dec tl"></div>
+<div class="corner-dec tr"></div>
+<div class="corner-dec bl"></div>
+<div class="corner-dec br"></div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-top-bar">
+      <div class="line"></div>
+      <span>// LEVEL 02 //</span>
+      <div class="line"></div>
+    </div>
+    <h1 class="main-title">CSW ESCAPE CABINETS</h1>
+    <p class="subtitle">Web Access Terminal — Level 2</p>
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      AWAITING 12-DIGIT VERIFICATION CODE
+    </div>
+  </header>
+
+  <!-- INPUT CARD -->
+  <div class="input-card" id="inputCard">
+    <div class="ic-corner-tl"></div>
+    <div class="ic-corner-br"></div>
+    <div class="ic-label">SECURE CODE VERIFICATION</div>
+    <div class="ic-sublabel">
+      Enter the 12-digit code you memorized from Level 1.<br>
+      One mistake and the system stays locked.
+    </div>
+    <div class="code-input-wrap">
+      <input
+        class="code-input"
+        id="codeInput"
+        type="text"
+        inputmode="numeric"
+        maxlength="12"
+        placeholder="_ _ _ _ _ _ _ _ _ _ _ _"
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') verifyCode()"
+      />
+    </div>
+    <button class="submit-btn" id="submitBtn" onclick="verifyCode()">
+      ▶ &nbsp; VERIFY &amp; UNLOCK
+    </button>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <!-- SUCCESS PANEL -->
+  <div class="success-panel" id="successPanel">
+    <span class="sp-icon">🏆</span>
+    <div class="sp-line">
+      <div class="dline"></div>
+      <span>STAGE CLEARED</span>
+      <div class="dline"></div>
+    </div>
+    <div class="sp-title">YOUR TEAM HAS SUCCESSFULLY<br>REACHED THE NEXT STAGE</div>
+    <div class="sp-msg">
+      Access granted. Code verified.<br>
+      You are cleared to proceed to <strong style="color:var(--green);">Level 3</strong>.
+    </div>
+    <div class="sp-badge">
+      <div class="sdot"></div>
+      LEVEL 3 HINT UNLOCKED
+    </div>
+    <div class="hint-box">
+      <div class="hb-label">LEVEL 3 DIRECTIVE</div>
+      <div class="hb-text">
+        Your next challenge awaits at the <span class="hl">third terminal</span>.<br>
+        Head to <span class="hl">Location 3</span> — look for the webpage with the final puzzle.<br>
+        Solve it to receive your <span class="hl">final instruction</span>.<br><br>
+        ⚠ &nbsp;Move fast. The clock is still running.
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; CSW ESCAPE CABINETS &nbsp;|&nbsp; AUTHORIZED PERSONNEL ONLY
+  </footer>
+
+</div>
+
+<script>
+  const validCodes = [
+    '482715936204',
+    '731946285017',
+    '596204817325',
+    '824173650291',
+    '315829746402',
+    '907318524671',
+    '641582930724',
+    '258407193685',
+    '573921846205',
+    '816350274913'
+  ];
+
+  function verifyCode() {
+    const input = document.getElementById('codeInput').value.trim();
+    const fb = document.getElementById('feedback');
+    const codeEl = document.getElementById('codeInput');
+
+    if (input.length === 0) {
+      fb.textContent = '[ ERROR ] — PLEASE ENTER THE 12-DIGIT CODE';
+      fb.className = 'feedback error';
+      return;
+    }
+
+    if (input.length !== 12) {
+      fb.textContent = `[ ERROR ] — CODE MUST BE EXACTLY 12 DIGITS (you entered ${input.length})`;
+      fb.className = 'feedback error';
+      codeEl.classList.add('shake');
+      setTimeout(() => codeEl.classList.remove('shake'), 400);
+      return;
+    }
+
+    if (validCodes.includes(input)) {
+      fb.textContent = '[ ACCESS GRANTED ] — CODE VERIFIED';
+      fb.className = 'feedback success';
+      codeEl.classList.add('success-state');
+      codeEl.disabled = true;
+      document.getElementById('submitBtn').disabled = true;
+
+      setTimeout(() => {
+        document.getElementById('inputCard').style.display = 'none';
+        document.getElementById('successPanel').classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 800);
+
+    } else {
+      fb.textContent = '[ DENIED ] — INVALID CODE — CHECK YOUR MEMORY AND TRY AGAIN';
+      fb.className = 'feedback error';
+      codeEl.classList.add('error-state');
+      codeEl.classList.add('shake');
+      setTimeout(() => {
+        codeEl.classList.remove('shake');
+        codeEl.classList.remove('error-state');
+      }, 600);
+      codeEl.value = '';
+    }
+  }
+</script>
+</body>
+</html>
